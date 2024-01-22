@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="EnrollmentDatabase" Class="DataClasses1DataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=DESKTOP-BNU33RO\SQLEXPRESS01;Initial Catalog=EnrollmentDatabase;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True" SettingsObjectName="SendScheduleFinals.Properties.Settings" SettingsPropertyName="EnrollmentDatabaseConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.tblEmployee" Member="tblEmployees">
+    <Type Name="tblEmployee">
+      <Column Name="employeeID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="employeeName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="classification" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="employeeEmail" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="employeePass" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.tblGradeLevel" Member="tblGradeLevels">
+    <Type Name="tblGradeLevel">
+      <Column Name="gradeLevelID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="gradeLevel" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="strand" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.tblRecord" Member="tblRecords">
+    <Type Name="tblRecord">
+      <Column Name="recordID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="studentID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="schoolName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="schoolYear" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="schoolTerm" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="subject" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="grade" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="gradeStatus" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Association Name="tblStudent_tblRecord" Member="tblStudent" ThisKey="studentID" OtherKey="StudentID" Type="tblStudent" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.tblSchedule" Member="tblSchedules">
+    <Type Name="tblSchedule">
+      <Column Name="ScheduleID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="ClassPeriod" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="ClassDay" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="subjectID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="employeeID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="gradeLevelID" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="section" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.tblStudent" Member="tblStudents">
+    <Type Name="tblStudent">
+      <Column Name="StudentID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="studentName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="studentGradeLevel" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="studentContactNumber" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="studentEmail" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="studentAddress" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="studentDateOfBirth" Type="System.DateTime" DbType="Date NOT NULL" CanBeNull="false" />
+      <Column Name="studentImage" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="studentAge" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="studentGender" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="studentNationality" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="studentStatus" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="paymentPlan" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Association Name="tblStudent_tblRecord" Member="tblRecords" ThisKey="StudentID" OtherKey="studentID" Type="tblRecord" />
+      <Association Name="tblStudent_tblStudentSchedule" Member="tblStudentSchedules" ThisKey="StudentID" OtherKey="studentID" Type="tblStudentSchedule" />
+    </Type>
+  </Table>
+  <Table Name="dbo.tblStudentSchedule" Member="tblStudentSchedules">
+    <Type Name="tblStudentSchedule">
+      <Column Name="studentScheduleID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="studentID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="scheduleID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="tblStudent_tblStudentSchedule" Member="tblStudent" ThisKey="studentID" OtherKey="StudentID" Type="tblStudent" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.tblSubject" Member="tblSubjects">
+    <Type Name="tblSubject">
+      <Column Name="subjectID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="subjectName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+</Database>
