@@ -82,7 +82,7 @@ namespace SendScheduleFinals
 
 
                     // Send schedule to all teachers
-                    var teachers = dbase.tblEmployees.Where(s => s.classification.Equals("Teacher", StringComparison.OrdinalIgnoreCase)).ToList();
+                    var teachers = dbase.tblEmployees.Where(s => s.classification == "Teacher").ToList();
                     int teacherIndex = 0;
 
                     while (teacherIndex < teachers.Count)
@@ -90,9 +90,46 @@ namespace SendScheduleFinals
                         enteredEmail = teachers[teacherIndex].employeeEmail;
 
 
-                        //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                        // Fetch the schedule data based on employeeID
+                        var scheduleData = dbase.tblSchedules
+                            .Where(schedule => schedule.employeeID == teachers[teacherIndex].employeeID)
+                            .Select(schedule => new
+                            {
+                                schedule.classDay,
+                                schedule.classPeriod,
+                                schedule.subjectID,
+                                schedule.sectionID
+                            })
+                            .ToList();
 
-                        MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                        // Fetch the subject names based on subjectID
+                        var subjectNames = dbase.tblSubjects
+                            .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                            .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                        var sectionNames = dbase.tblSections
+                            .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                            .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+                        if (scheduleData.Any())
+                        {
+                            // Display schedule data in the message box
+                            StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                            foreach (var schedule in scheduleData)
+                            {
+                                if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                    sectionNames.TryGetValue(schedule.sectionID, out string sectionName))
+                                {
+                                    scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}");
+                                }
+                            }
+
+                            // Send email with schedule information
+                            EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                            MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                        }
+
                         teacherIndex++;
                         System.Threading.Thread.Sleep(3000); // Pause for 3 seconds
                     }
@@ -105,16 +142,59 @@ namespace SendScheduleFinals
 
 
                     // Send schedule to all students
-                    var students = dbase.tblStudents.Where(s => s.studentStatus.Equals("Enrolled", StringComparison.OrdinalIgnoreCase)).ToList();
+                    var students = dbase.tblStudents.Where(s => s.studentStatus == "Enrolled").ToList();
                     int studentIndex = 0;
 
                     while (studentIndex < students.Count)
                     {
                         enteredEmail = students[studentIndex].studentEmail;
 
-                        //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                      
+                        var scheduleData = dbase.tblSchedules
+                           .Where(schedule => schedule.gradeLevelID == students[studentIndex].gradeLevelID)
+                           .Select(schedule => new
+                           {
+                               schedule.classDay,
+                               schedule.classPeriod,
+                               schedule.subjectID,
+                               schedule.sectionID,
+                               schedule.gradeLevelID
+                           })
+                           .ToList();
 
-                        MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                        // Fetch the subject names based on subjectID
+                        var subjectNames = dbase.tblSubjects
+                            .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                            .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                        var sectionNames = dbase.tblSections
+                            .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                            .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+
+                        var gradeLevels = dbase.tblGradeLevels
+                            .Where(gradeLevel => scheduleData.Select(s => s.gradeLevelID).Contains(gradeLevel.gradeLevelID))
+                            .ToDictionary(gradeLevel => gradeLevel.gradeLevelID, gradeLevel => gradeLevel.strand);
+
+                        if (scheduleData.Any())
+                        {
+                            // Display schedule data in the message box
+                            StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                            foreach (var schedule in scheduleData)
+                            {
+                                if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                    sectionNames.TryGetValue(schedule.sectionID, out string sectionName) &&
+                                    sectionNames.TryGetValue(schedule.sectionID, out string strand))
+                                {
+                                    scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}, Grade Level {strand}");
+                                }
+                            }
+
+                            // Send email with schedule information
+                            EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                            MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                        }
                         studentIndex++;
                         System.Threading.Thread.Sleep(3000); // Pause for 2 seconds
                     }
@@ -148,15 +228,56 @@ namespace SendScheduleFinals
                 var teacherByEmail = dbase.tblEmployees.FirstOrDefault(s => s.employeeEmail == inputText);
                 var studentByEmail = dbase.tblStudents.FirstOrDefault(s => s.studentEmail == inputText);
 
+
+
+
+
+
                 if (teacherByEmail != null)
                 {
                     if(teacherByEmail.classification.Equals("Teacher", StringComparison.OrdinalIgnoreCase))
                     {
                         enteredEmail = teacherByEmail.employeeEmail;
 
-                        //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                        // Fetch the schedule data based on employeeID
+                        var scheduleData = dbase.tblSchedules
+                            .Where(schedule => schedule.employeeID == teacherByEmail.employeeID)
+                            .Select(schedule => new
+                            {
+                                schedule.classDay,
+                                schedule.classPeriod,
+                                schedule.subjectID,
+                                schedule.sectionID
+                            })
+                            .ToList();
 
-                        MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                        // Fetch the subject names based on subjectID
+                        var subjectNames = dbase.tblSubjects
+                            .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                            .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                        var sectionNames = dbase.tblSections
+                            .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                            .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+                        if (scheduleData.Any())
+                        {
+                            // Display schedule data in the message box
+                            StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                            foreach (var schedule in scheduleData)
+                            {
+                                if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                    sectionNames.TryGetValue(schedule.sectionID, out string sectionName))
+                                {
+                                    scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}");
+                                }
+                            }
+
+                            // Send email with schedule information
+                            EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                            MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                        }
                         return;
                     }
                     else
@@ -167,15 +288,65 @@ namespace SendScheduleFinals
 
                 }
 
+
+
+
+
+
+
+
                 if (studentByEmail != null)
                 {
                     if (studentByEmail.studentStatus.Equals("Enrolled", StringComparison.OrdinalIgnoreCase))
                     {
                         enteredEmail = studentByEmail.studentEmail;
 
-                        //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                      
+                        var scheduleData = dbase.tblSchedules
+                           .Where(schedule => schedule.gradeLevelID == studentByEmail.gradeLevelID)
+                           .Select(schedule => new
+                           {
+                               schedule.classDay,
+                               schedule.classPeriod,
+                               schedule.subjectID,
+                               schedule.sectionID,
+                               schedule.gradeLevelID
+                           })
+                           .ToList();
 
-                        MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                        // Fetch the subject names based on subjectID
+                        var subjectNames = dbase.tblSubjects
+                            .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                            .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                        var sectionNames = dbase.tblSections
+                            .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                            .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+
+                        var gradeLevels = dbase.tblGradeLevels
+                            .Where(gradeLevel => scheduleData.Select(s => s.gradeLevelID).Contains(gradeLevel.gradeLevelID))
+                            .ToDictionary(gradeLevel => gradeLevel.gradeLevelID, gradeLevel => gradeLevel.strand);
+
+                        if (scheduleData.Any())
+                        {
+                            // Display schedule data in the message box
+                            StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                            foreach (var schedule in scheduleData)
+                            {
+                                if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                    sectionNames.TryGetValue(schedule.sectionID, out string sectionName) &&
+                                    sectionNames.TryGetValue(schedule.sectionID, out string strand))
+                                {
+                                    scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}, Grade Level {strand}");
+                                }
+                            }
+
+                            // Send email with schedule information
+                            EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                            MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                        }
                         return;
                     }
                     else
@@ -203,13 +374,53 @@ namespace SendScheduleFinals
                
                 if (teacherByID != null)
                 {
+
+
                     if (teacherByID.classification.Equals("Teacher", StringComparison.OrdinalIgnoreCase))
                     {
                         enteredEmail = teacherByID.employeeEmail;
 
-                        //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                        // Fetch the schedule data based on employeeID
+                        var scheduleData = dbase.tblSchedules
+                            .Where(schedule => schedule.employeeID == teacherByID.employeeID)
+                            .Select(schedule => new
+                            {
+                                schedule.classDay,
+                                schedule.classPeriod,
+                                schedule.subjectID,
+                                schedule.sectionID
+                            })
+                            .ToList();
 
-                        MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                        // Fetch the subject names based on subjectID
+                        var subjectNames = dbase.tblSubjects
+                            .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                            .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                        var sectionNames = dbase.tblSections
+                            .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                            .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+                        if (scheduleData.Any())
+                        {
+                            // Display schedule data in the message box
+                            StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                            foreach (var schedule in scheduleData)
+                            {
+                                if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                    sectionNames.TryGetValue(schedule.sectionID, out string sectionName))
+                                {
+                                    scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}");
+                                }
+                            }
+
+                            // Send email with schedule information
+                            EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                            MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                        }
+
+
                         return;
                     }
 
@@ -228,8 +439,51 @@ namespace SendScheduleFinals
                         enteredEmail = studentByID.studentEmail;
 
                         //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                        var scheduleData = dbase.tblSchedules
+                           .Where(schedule => schedule.gradeLevelID == studentByID.gradeLevelID)
+                           .Select(schedule => new
+                           {
+                               schedule.classDay,
+                               schedule.classPeriod,
+                               schedule.subjectID,
+                               schedule.sectionID,
+                               schedule.gradeLevelID
+                           })
+                           .ToList();
 
-                        MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                        // Fetch the subject names based on subjectID
+                        var subjectNames = dbase.tblSubjects
+                            .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                            .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                        var sectionNames = dbase.tblSections
+                            .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                            .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+
+                        var gradeLevels = dbase.tblGradeLevels
+                            .Where(gradeLevel => scheduleData.Select(s => s.gradeLevelID).Contains(gradeLevel.gradeLevelID))
+                            .ToDictionary(gradeLevel => gradeLevel.gradeLevelID, gradeLevel => gradeLevel.strand);
+
+                        if (scheduleData.Any())
+                        {
+                            // Display schedule data in the message box
+                            StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                            foreach (var schedule in scheduleData)
+                            {
+                                if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                    sectionNames.TryGetValue(schedule.sectionID, out string sectionName) &&
+                                    sectionNames.TryGetValue(schedule.sectionID, out string strand))
+                                {
+                                    scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}, Grade Level {strand}");
+                                }
+                            }
+
+                            // Send email with schedule information
+                            EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                            MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                        }
                         return;
                     }
 
@@ -259,9 +513,51 @@ namespace SendScheduleFinals
                 {
                     enteredEmail = studentByName.studentEmail;
 
-                    //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                    var scheduleData = dbase.tblSchedules
+                       .Where(schedule => schedule.gradeLevelID == studentByName.gradeLevelID)
+                       .Select(schedule => new
+                       {
+                           schedule.classDay,
+                           schedule.classPeriod,
+                           schedule.subjectID,
+                           schedule.sectionID,
+                           schedule.gradeLevelID
+                       })
+                       .ToList();
 
-                    MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                    // Fetch the subject names based on subjectID
+                    var subjectNames = dbase.tblSubjects
+                        .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                        .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                    var sectionNames = dbase.tblSections
+                        .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                        .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+
+                    var gradeLevels = dbase.tblGradeLevels
+                        .Where(gradeLevel => scheduleData.Select(s => s.gradeLevelID).Contains(gradeLevel.gradeLevelID))
+                        .ToDictionary(gradeLevel => gradeLevel.gradeLevelID, gradeLevel => gradeLevel.strand);
+
+                    if (scheduleData.Any())
+                    {
+                        // Display schedule data in the message box
+                        StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                        foreach (var schedule in scheduleData)
+                        {
+                            if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                sectionNames.TryGetValue(schedule.sectionID, out string sectionName) &&
+                                sectionNames.TryGetValue(schedule.sectionID, out string strand))
+                            {
+                                scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}, Grade Level {strand}");
+                            }
+                        }
+
+                        // Send email with schedule information
+                        EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                        MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                    }
                     return;
                 }
                 else
@@ -270,6 +566,11 @@ namespace SendScheduleFinals
                     return;
                 }
             }
+
+
+
+
+
 
 
             // Check if the input is a teacher name
@@ -282,9 +583,48 @@ namespace SendScheduleFinals
                 {
                     enteredEmail = teacherByName.employeeEmail;
 
-                    //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                    // Fetch the schedule data based on employeeID
+                    // Fetch the schedule data based on employeeID
+                    var scheduleData = dbase.tblSchedules
+                        .Where(schedule => schedule.employeeID == teacherByName.employeeID)
+                        .Select(schedule => new
+                        {
+                            schedule.classDay,
+                            schedule.classPeriod,
+                            schedule.subjectID,
+                            schedule.sectionID
+                        })
+                        .ToList();
 
-                    MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                    // Fetch the subject names based on subjectID
+                    var subjectNames = dbase.tblSubjects
+                        .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                        .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                    var sectionNames = dbase.tblSections
+                        .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                        .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+                    if (scheduleData.Any())
+                    {
+                        // Display schedule data in the message box
+                        StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                        foreach (var schedule in scheduleData)
+                        {
+                            if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                sectionNames.TryGetValue(schedule.sectionID, out string sectionName))
+                            {
+                                scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}");
+                            }
+                        }
+
+                        // Send email with schedule information
+                        EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                        MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                    }
+
+
                     return;
                 }
                 else
@@ -303,16 +643,55 @@ namespace SendScheduleFinals
             // Check if the input is "Teachers"
             if (inputText == "Teachers")
             {
-                var teachers = dbase.tblEmployees.Where(s => s.classification.Equals("Teacher", StringComparison.OrdinalIgnoreCase)).ToList();
+                var teachers = dbase.tblEmployees.Where(s => s.classification == "Teacher").ToList();
                 int index = 0;
 
                 while (index < teachers.Count)
                 {
                     enteredEmail = teachers[index].employeeEmail;
 
-                    //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                  
+                    // Fetch the schedule data based on employeeID
+                    var scheduleData = dbase.tblSchedules
+                        .Where(schedule => schedule.employeeID == teachers[index].employeeID)
+                        .Select(schedule => new
+                        {
+                            schedule.classDay,
+                            schedule.classPeriod,
+                            schedule.subjectID,
+                            schedule.sectionID
+                        })
+                        .ToList();
 
-                    MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                    // Fetch the subject names based on subjectID
+                    var subjectNames = dbase.tblSubjects
+                        .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                        .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                    var sectionNames = dbase.tblSections
+                        .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                        .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+                    if (scheduleData.Any())
+                    {
+                        // Display schedule data in the message box
+                        StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                        foreach (var schedule in scheduleData)
+                        {
+                            if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                sectionNames.TryGetValue(schedule.sectionID, out string sectionName))
+                            {
+                                scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}");
+                            }
+                        }
+
+                        // Send email with schedule information
+                        EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                        MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                    }
+
+
                     index++;
                    System.Threading.Thread.Sleep(3000); // Pause for 3 second
                 }
@@ -324,19 +703,66 @@ namespace SendScheduleFinals
 
 
 
+
+
+
+
             // Check if the input is "Students"
             if (inputText == "Students")
             {
-                var students = dbase.tblStudents.Where(s => s.studentStatus.Equals("Enrolled", StringComparison.OrdinalIgnoreCase)).ToList();
+                var students = dbase.tblStudents.Where(s => s.studentStatus == "Enrolled").ToList();
                 int index = 0;
 
                 while (index < students.Count)
                 {
                     enteredEmail = students[index].studentEmail;
 
-                    //EmailHelper.SendEmail(enteredEmail);  UNCOMMENT THIS 
+                   
+                    var scheduleData = dbase.tblSchedules
+                       .Where(schedule => schedule.gradeLevelID == students[index].gradeLevelID)
+                       .Select(schedule => new
+                       {
+                           schedule.classDay,
+                           schedule.classPeriod,
+                           schedule.subjectID,
+                           schedule.sectionID,
+                           schedule.gradeLevelID
+                       })
+                       .ToList();
 
-                    MessageBox.Show("Email sent successfully to: " + enteredEmail);
+                    // Fetch the subject names based on subjectID
+                    var subjectNames = dbase.tblSubjects
+                        .Where(subject => scheduleData.Select(s => s.subjectID).Contains(subject.subjectID))
+                        .ToDictionary(subject => subject.subjectID, subject => subject.subjectName);
+
+                    var sectionNames = dbase.tblSections
+                        .Where(section => scheduleData.Select(s => s.sectionID).Contains(section.sectionID))
+                        .ToDictionary(section => section.sectionID, section => section.sectionName);
+
+
+                    var gradeLevels = dbase.tblGradeLevels
+                        .Where(gradeLevel => scheduleData.Select(s => s.gradeLevelID).Contains(gradeLevel.gradeLevelID))
+                        .ToDictionary(gradeLevel => gradeLevel.gradeLevelID, gradeLevel => gradeLevel.strand);
+
+                    if (scheduleData.Any())
+                    {
+                        // Display schedule data in the message box
+                        StringBuilder scheduleMessage = new StringBuilder("Class Schedule:\n");
+                        foreach (var schedule in scheduleData)
+                        {
+                            if (subjectNames.TryGetValue(schedule.subjectID, out string subjectName) &&
+                                sectionNames.TryGetValue(schedule.sectionID, out string sectionName) &&
+                                sectionNames.TryGetValue(schedule.sectionID, out string strand))
+                            {
+                                scheduleMessage.AppendLine($"Day: {schedule.classDay}, Period: {schedule.classPeriod}, Subject: {subjectName}, Section: {sectionName}, Grade Level {strand}");
+                            }
+                        }
+
+                        // Send email with schedule information
+                        EmailHelper.SendEmail(enteredEmail, "Class Schedule", scheduleMessage.ToString());
+
+                        MessageBox.Show($"Email sent successfully to: {enteredEmail}\n{scheduleMessage}");
+                    }
                     index++;
                    System.Threading.Thread.Sleep(3000); // Pause for 3 second
                 }

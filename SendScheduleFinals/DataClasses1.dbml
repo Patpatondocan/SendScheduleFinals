@@ -2,11 +2,12 @@
   <Connection Mode="AppSettings" ConnectionString="Data Source=DESKTOP-BNU33RO\SQLEXPRESS01;Initial Catalog=EnrollmentDatabase;Integrated Security=True;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True" SettingsObjectName="SendScheduleFinals.Properties.Settings" SettingsPropertyName="EnrollmentDatabaseConnectionString" Provider="System.Data.SqlClient" />
   <Table Name="dbo.tblEmployee" Member="tblEmployees">
     <Type Name="tblEmployee">
-      <Column Name="employeeID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="employeeID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="employeeName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="classification" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="employeeEmail" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="employeePass" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Association Name="tblEmployee_tblRecord" Member="tblRecords" ThisKey="employeeID" OtherKey="employeeID" Type="tblRecord" />
     </Type>
   </Table>
   <Table Name="dbo.tblGradeLevel" Member="tblGradeLevels">
@@ -14,63 +15,76 @@
       <Column Name="gradeLevelID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="gradeLevel" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="strand" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Association Name="tblGradeLevel_tblStudent" Member="tblStudents" ThisKey="gradeLevelID" OtherKey="gradeLevelID" Type="tblStudent" />
     </Type>
   </Table>
   <Table Name="dbo.tblRecord" Member="tblRecords">
     <Type Name="tblRecord">
-      <Column Name="recordID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="recordID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="studentID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="schoolName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="schoolYear" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="schoolTerm" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="subject" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="subjectID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="grade" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="gradeStatus" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="employeeID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="tblEmployee_tblRecord" Member="tblEmployee" ThisKey="employeeID" OtherKey="employeeID" Type="tblEmployee" IsForeignKey="true" />
       <Association Name="tblStudent_tblRecord" Member="tblStudent" ThisKey="studentID" OtherKey="StudentID" Type="tblStudent" IsForeignKey="true" />
+      <Association Name="tblSubject_tblRecord" Member="tblSubject" ThisKey="subjectID" OtherKey="subjectID" Type="tblSubject" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.tblSchedule" Member="tblSchedules">
     <Type Name="tblSchedule">
-      <Column Name="ScheduleID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="ClassPeriod" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Column Name="ClassDay" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Column Name="subjectID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="employeeID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="gradeLevelID" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="section" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="scheduleID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="classPeriod" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="classDay" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="subjectID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="employeeID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="gradeLevelID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="sectionID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.tblSection" Member="tblSections">
+    <Type Name="tblSection">
+      <Column Name="sectionID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="sectionName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Association Name="tblSection_tblStudentSection" Member="tblStudentSections" ThisKey="sectionID" OtherKey="sectionID" Type="tblStudentSection" />
     </Type>
   </Table>
   <Table Name="dbo.tblStudent" Member="tblStudents">
     <Type Name="tblStudent">
-      <Column Name="StudentID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="StudentID" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
       <Column Name="studentName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="studentGradeLevel" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="studentContactNumber" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="gradeLevelID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="studentContactNumber" Type="System.String" DbType="NVarChar(11) NOT NULL" CanBeNull="false" />
       <Column Name="studentEmail" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="studentAddress" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="studentDateOfBirth" Type="System.DateTime" DbType="Date NOT NULL" CanBeNull="false" />
       <Column Name="studentImage" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Column Name="studentAge" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="studentGender" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="studentNationality" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="studentStatus" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Column Name="paymentPlan" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
       <Association Name="tblStudent_tblRecord" Member="tblRecords" ThisKey="StudentID" OtherKey="studentID" Type="tblRecord" />
-      <Association Name="tblStudent_tblStudentSchedule" Member="tblStudentSchedules" ThisKey="StudentID" OtherKey="studentID" Type="tblStudentSchedule" />
+      <Association Name="tblStudent_tblStudentSection" Member="tblStudentSections" ThisKey="StudentID" OtherKey="studentID" Type="tblStudentSection" />
+      <Association Name="tblGradeLevel_tblStudent" Member="tblGradeLevel" ThisKey="gradeLevelID" OtherKey="gradeLevelID" Type="tblGradeLevel" IsForeignKey="true" />
     </Type>
   </Table>
-  <Table Name="dbo.tblStudentSchedule" Member="tblStudentSchedules">
-    <Type Name="tblStudentSchedule">
-      <Column Name="studentScheduleID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+  <Table Name="dbo.tblStudentSection" Member="tblStudentSections">
+    <Type Name="tblStudentSection">
+      <Column Name="studentSectionID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="studentID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="scheduleID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Association Name="tblStudent_tblStudentSchedule" Member="tblStudent" ThisKey="studentID" OtherKey="StudentID" Type="tblStudent" IsForeignKey="true" />
+      <Column Name="sectionID" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Association Name="tblSection_tblStudentSection" Member="tblSection" ThisKey="sectionID" OtherKey="sectionID" Type="tblSection" IsForeignKey="true" />
+      <Association Name="tblStudent_tblStudentSection" Member="tblStudent" ThisKey="studentID" OtherKey="StudentID" Type="tblStudent" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.tblSubject" Member="tblSubjects">
     <Type Name="tblSubject">
       <Column Name="subjectID" Type="System.Int32" DbType="Int NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="subjectName" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Association Name="tblSubject_tblRecord" Member="tblRecords" ThisKey="subjectID" OtherKey="subjectID" Type="tblRecord" />
     </Type>
   </Table>
 </Database>

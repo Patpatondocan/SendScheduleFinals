@@ -42,12 +42,15 @@ namespace SendScheduleFinals
     partial void InserttblSchedule(tblSchedule instance);
     partial void UpdatetblSchedule(tblSchedule instance);
     partial void DeletetblSchedule(tblSchedule instance);
+    partial void InserttblSection(tblSection instance);
+    partial void UpdatetblSection(tblSection instance);
+    partial void DeletetblSection(tblSection instance);
     partial void InserttblStudent(tblStudent instance);
     partial void UpdatetblStudent(tblStudent instance);
     partial void DeletetblStudent(tblStudent instance);
-    partial void InserttblStudentSchedule(tblStudentSchedule instance);
-    partial void UpdatetblStudentSchedule(tblStudentSchedule instance);
-    partial void DeletetblStudentSchedule(tblStudentSchedule instance);
+    partial void InserttblStudentSection(tblStudentSection instance);
+    partial void UpdatetblStudentSection(tblStudentSection instance);
+    partial void DeletetblStudentSection(tblStudentSection instance);
     partial void InserttblSubject(tblSubject instance);
     partial void UpdatetblSubject(tblSubject instance);
     partial void DeletetblSubject(tblSubject instance);
@@ -115,6 +118,14 @@ namespace SendScheduleFinals
 			}
 		}
 		
+		public System.Data.Linq.Table<tblSection> tblSections
+		{
+			get
+			{
+				return this.GetTable<tblSection>();
+			}
+		}
+		
 		public System.Data.Linq.Table<tblStudent> tblStudents
 		{
 			get
@@ -123,11 +134,11 @@ namespace SendScheduleFinals
 			}
 		}
 		
-		public System.Data.Linq.Table<tblStudentSchedule> tblStudentSchedules
+		public System.Data.Linq.Table<tblStudentSection> tblStudentSections
 		{
 			get
 			{
-				return this.GetTable<tblStudentSchedule>();
+				return this.GetTable<tblStudentSection>();
 			}
 		}
 		
@@ -156,6 +167,8 @@ namespace SendScheduleFinals
 		
 		private string _employeePass;
 		
+		private EntitySet<tblRecord> _tblRecords;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -174,10 +187,11 @@ namespace SendScheduleFinals
 		
 		public tblEmployee()
 		{
+			this._tblRecords = new EntitySet<tblRecord>(new Action<tblRecord>(this.attach_tblRecords), new Action<tblRecord>(this.detach_tblRecords));
 			OnCreated();
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_employeeID", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_employeeID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
 		public int employeeID
 		{
 			get
@@ -277,6 +291,19 @@ namespace SendScheduleFinals
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblEmployee_tblRecord", Storage="_tblRecords", ThisKey="employeeID", OtherKey="employeeID")]
+		public EntitySet<tblRecord> tblRecords
+		{
+			get
+			{
+				return this._tblRecords;
+			}
+			set
+			{
+				this._tblRecords.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -296,6 +323,18 @@ namespace SendScheduleFinals
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
+		
+		private void attach_tblRecords(tblRecord entity)
+		{
+			this.SendPropertyChanging();
+			entity.tblEmployee = this;
+		}
+		
+		private void detach_tblRecords(tblRecord entity)
+		{
+			this.SendPropertyChanging();
+			entity.tblEmployee = null;
+		}
 	}
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.tblGradeLevel")]
@@ -309,6 +348,8 @@ namespace SendScheduleFinals
 		private int _gradeLevel;
 		
 		private string _strand;
+		
+		private EntitySet<tblStudent> _tblStudents;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
@@ -324,6 +365,7 @@ namespace SendScheduleFinals
 		
 		public tblGradeLevel()
 		{
+			this._tblStudents = new EntitySet<tblStudent>(new Action<tblStudent>(this.attach_tblStudents), new Action<tblStudent>(this.detach_tblStudents));
 			OnCreated();
 		}
 		
@@ -387,6 +429,19 @@ namespace SendScheduleFinals
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblGradeLevel_tblStudent", Storage="_tblStudents", ThisKey="gradeLevelID", OtherKey="gradeLevelID")]
+		public EntitySet<tblStudent> tblStudents
+		{
+			get
+			{
+				return this._tblStudents;
+			}
+			set
+			{
+				this._tblStudents.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -406,6 +461,18 @@ namespace SendScheduleFinals
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
 		}
+		
+		private void attach_tblStudents(tblStudent entity)
+		{
+			this.SendPropertyChanging();
+			entity.tblGradeLevel = this;
+		}
+		
+		private void detach_tblStudents(tblStudent entity)
+		{
+			this.SendPropertyChanging();
+			entity.tblGradeLevel = null;
+		}
 	}
 	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.tblRecord")]
@@ -424,13 +491,19 @@ namespace SendScheduleFinals
 		
 		private int _schoolTerm;
 		
-		private string _subject;
+		private int _subjectID;
 		
 		private int _grade;
 		
 		private string _gradeStatus;
 		
+		private int _employeeID;
+		
+		private EntityRef<tblEmployee> _tblEmployee;
+		
 		private EntityRef<tblStudent> _tblStudent;
+		
+		private EntityRef<tblSubject> _tblSubject;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
@@ -446,21 +519,25 @@ namespace SendScheduleFinals
     partial void OnschoolYearChanged();
     partial void OnschoolTermChanging(int value);
     partial void OnschoolTermChanged();
-    partial void OnsubjectChanging(string value);
-    partial void OnsubjectChanged();
+    partial void OnsubjectIDChanging(int value);
+    partial void OnsubjectIDChanged();
     partial void OngradeChanging(int value);
     partial void OngradeChanged();
     partial void OngradeStatusChanging(string value);
     partial void OngradeStatusChanged();
+    partial void OnemployeeIDChanging(int value);
+    partial void OnemployeeIDChanged();
     #endregion
 		
 		public tblRecord()
 		{
+			this._tblEmployee = default(EntityRef<tblEmployee>);
 			this._tblStudent = default(EntityRef<tblStudent>);
+			this._tblSubject = default(EntityRef<tblSubject>);
 			OnCreated();
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_recordID", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_recordID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
 		public int recordID
 		{
 			get
@@ -564,22 +641,26 @@ namespace SendScheduleFinals
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_subject", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
-		public string subject
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_subjectID", DbType="Int NOT NULL")]
+		public int subjectID
 		{
 			get
 			{
-				return this._subject;
+				return this._subjectID;
 			}
 			set
 			{
-				if ((this._subject != value))
+				if ((this._subjectID != value))
 				{
-					this.OnsubjectChanging(value);
+					if (this._tblSubject.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnsubjectIDChanging(value);
 					this.SendPropertyChanging();
-					this._subject = value;
-					this.SendPropertyChanged("subject");
-					this.OnsubjectChanged();
+					this._subjectID = value;
+					this.SendPropertyChanged("subjectID");
+					this.OnsubjectIDChanged();
 				}
 			}
 		}
@@ -624,6 +705,64 @@ namespace SendScheduleFinals
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_employeeID", DbType="Int NOT NULL")]
+		public int employeeID
+		{
+			get
+			{
+				return this._employeeID;
+			}
+			set
+			{
+				if ((this._employeeID != value))
+				{
+					if (this._tblEmployee.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnemployeeIDChanging(value);
+					this.SendPropertyChanging();
+					this._employeeID = value;
+					this.SendPropertyChanged("employeeID");
+					this.OnemployeeIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblEmployee_tblRecord", Storage="_tblEmployee", ThisKey="employeeID", OtherKey="employeeID", IsForeignKey=true)]
+		public tblEmployee tblEmployee
+		{
+			get
+			{
+				return this._tblEmployee.Entity;
+			}
+			set
+			{
+				tblEmployee previousValue = this._tblEmployee.Entity;
+				if (((previousValue != value) 
+							|| (this._tblEmployee.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._tblEmployee.Entity = null;
+						previousValue.tblRecords.Remove(this);
+					}
+					this._tblEmployee.Entity = value;
+					if ((value != null))
+					{
+						value.tblRecords.Add(this);
+						this._employeeID = value.employeeID;
+					}
+					else
+					{
+						this._employeeID = default(int);
+					}
+					this.SendPropertyChanged("tblEmployee");
+				}
+			}
+		}
+		
 		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblStudent_tblRecord", Storage="_tblStudent", ThisKey="studentID", OtherKey="StudentID", IsForeignKey=true)]
 		public tblStudent tblStudent
 		{
@@ -658,6 +797,40 @@ namespace SendScheduleFinals
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblSubject_tblRecord", Storage="_tblSubject", ThisKey="subjectID", OtherKey="subjectID", IsForeignKey=true)]
+		public tblSubject tblSubject
+		{
+			get
+			{
+				return this._tblSubject.Entity;
+			}
+			set
+			{
+				tblSubject previousValue = this._tblSubject.Entity;
+				if (((previousValue != value) 
+							|| (this._tblSubject.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._tblSubject.Entity = null;
+						previousValue.tblRecords.Remove(this);
+					}
+					this._tblSubject.Entity = value;
+					if ((value != null))
+					{
+						value.tblRecords.Add(this);
+						this._subjectID = value.subjectID;
+					}
+					else
+					{
+						this._subjectID = default(int);
+					}
+					this.SendPropertyChanged("tblSubject");
+				}
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -685,38 +858,38 @@ namespace SendScheduleFinals
 		
 		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
 		
-		private int _ScheduleID;
+		private int _scheduleID;
 		
-		private string _ClassPeriod;
+		private string _classPeriod;
 		
-		private string _ClassDay;
+		private string _classDay;
 		
-		private System.Nullable<int> _subjectID;
+		private int _subjectID;
 		
-		private System.Nullable<int> _employeeID;
+		private int _employeeID;
 		
-		private System.Nullable<int> _gradeLevelID;
+		private int _gradeLevelID;
 		
-		private string _section;
+		private int _sectionID;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
     partial void OnCreated();
-    partial void OnScheduleIDChanging(int value);
-    partial void OnScheduleIDChanged();
-    partial void OnClassPeriodChanging(string value);
-    partial void OnClassPeriodChanged();
-    partial void OnClassDayChanging(string value);
-    partial void OnClassDayChanged();
-    partial void OnsubjectIDChanging(System.Nullable<int> value);
+    partial void OnscheduleIDChanging(int value);
+    partial void OnscheduleIDChanged();
+    partial void OnclassPeriodChanging(string value);
+    partial void OnclassPeriodChanged();
+    partial void OnclassDayChanging(string value);
+    partial void OnclassDayChanged();
+    partial void OnsubjectIDChanging(int value);
     partial void OnsubjectIDChanged();
-    partial void OnemployeeIDChanging(System.Nullable<int> value);
+    partial void OnemployeeIDChanging(int value);
     partial void OnemployeeIDChanged();
-    partial void OngradeLevelIDChanging(System.Nullable<int> value);
+    partial void OngradeLevelIDChanging(int value);
     partial void OngradeLevelIDChanged();
-    partial void OnsectionChanging(string value);
-    partial void OnsectionChanged();
+    partial void OnsectionIDChanging(int value);
+    partial void OnsectionIDChanged();
     #endregion
 		
 		public tblSchedule()
@@ -724,68 +897,68 @@ namespace SendScheduleFinals
 			OnCreated();
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ScheduleID", DbType="Int NOT NULL", IsPrimaryKey=true)]
-		public int ScheduleID
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_scheduleID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
+		public int scheduleID
 		{
 			get
 			{
-				return this._ScheduleID;
+				return this._scheduleID;
 			}
 			set
 			{
-				if ((this._ScheduleID != value))
+				if ((this._scheduleID != value))
 				{
-					this.OnScheduleIDChanging(value);
+					this.OnscheduleIDChanging(value);
 					this.SendPropertyChanging();
-					this._ScheduleID = value;
-					this.SendPropertyChanged("ScheduleID");
-					this.OnScheduleIDChanged();
+					this._scheduleID = value;
+					this.SendPropertyChanged("scheduleID");
+					this.OnscheduleIDChanged();
 				}
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ClassPeriod", DbType="NVarChar(50)")]
-		public string ClassPeriod
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_classPeriod", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
+		public string classPeriod
 		{
 			get
 			{
-				return this._ClassPeriod;
+				return this._classPeriod;
 			}
 			set
 			{
-				if ((this._ClassPeriod != value))
+				if ((this._classPeriod != value))
 				{
-					this.OnClassPeriodChanging(value);
+					this.OnclassPeriodChanging(value);
 					this.SendPropertyChanging();
-					this._ClassPeriod = value;
-					this.SendPropertyChanged("ClassPeriod");
-					this.OnClassPeriodChanged();
+					this._classPeriod = value;
+					this.SendPropertyChanged("classPeriod");
+					this.OnclassPeriodChanged();
 				}
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ClassDay", DbType="NVarChar(50)")]
-		public string ClassDay
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_classDay", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
+		public string classDay
 		{
 			get
 			{
-				return this._ClassDay;
+				return this._classDay;
 			}
 			set
 			{
-				if ((this._ClassDay != value))
+				if ((this._classDay != value))
 				{
-					this.OnClassDayChanging(value);
+					this.OnclassDayChanging(value);
 					this.SendPropertyChanging();
-					this._ClassDay = value;
-					this.SendPropertyChanged("ClassDay");
-					this.OnClassDayChanged();
+					this._classDay = value;
+					this.SendPropertyChanged("classDay");
+					this.OnclassDayChanged();
 				}
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_subjectID", DbType="Int")]
-		public System.Nullable<int> subjectID
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_subjectID", DbType="Int NOT NULL")]
+		public int subjectID
 		{
 			get
 			{
@@ -804,8 +977,8 @@ namespace SendScheduleFinals
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_employeeID", DbType="Int")]
-		public System.Nullable<int> employeeID
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_employeeID", DbType="Int NOT NULL")]
+		public int employeeID
 		{
 			get
 			{
@@ -824,8 +997,8 @@ namespace SendScheduleFinals
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_gradeLevelID", DbType="Int")]
-		public System.Nullable<int> gradeLevelID
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_gradeLevelID", DbType="Int NOT NULL")]
+		public int gradeLevelID
 		{
 			get
 			{
@@ -844,22 +1017,22 @@ namespace SendScheduleFinals
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_section", DbType="NVarChar(50)")]
-		public string section
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_sectionID", DbType="Int NOT NULL")]
+		public int sectionID
 		{
 			get
 			{
-				return this._section;
+				return this._sectionID;
 			}
 			set
 			{
-				if ((this._section != value))
+				if ((this._sectionID != value))
 				{
-					this.OnsectionChanging(value);
+					this.OnsectionIDChanging(value);
 					this.SendPropertyChanging();
-					this._section = value;
-					this.SendPropertyChanged("section");
-					this.OnsectionChanged();
+					this._sectionID = value;
+					this.SendPropertyChanged("sectionID");
+					this.OnsectionIDChanged();
 				}
 			}
 		}
@@ -885,6 +1058,120 @@ namespace SendScheduleFinals
 		}
 	}
 	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.tblSection")]
+	public partial class tblSection : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private int _sectionID;
+		
+		private string _sectionName;
+		
+		private EntitySet<tblStudentSection> _tblStudentSections;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnsectionIDChanging(int value);
+    partial void OnsectionIDChanged();
+    partial void OnsectionNameChanging(string value);
+    partial void OnsectionNameChanged();
+    #endregion
+		
+		public tblSection()
+		{
+			this._tblStudentSections = new EntitySet<tblStudentSection>(new Action<tblStudentSection>(this.attach_tblStudentSections), new Action<tblStudentSection>(this.detach_tblStudentSections));
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_sectionID", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		public int sectionID
+		{
+			get
+			{
+				return this._sectionID;
+			}
+			set
+			{
+				if ((this._sectionID != value))
+				{
+					this.OnsectionIDChanging(value);
+					this.SendPropertyChanging();
+					this._sectionID = value;
+					this.SendPropertyChanged("sectionID");
+					this.OnsectionIDChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_sectionName", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
+		public string sectionName
+		{
+			get
+			{
+				return this._sectionName;
+			}
+			set
+			{
+				if ((this._sectionName != value))
+				{
+					this.OnsectionNameChanging(value);
+					this.SendPropertyChanging();
+					this._sectionName = value;
+					this.SendPropertyChanged("sectionName");
+					this.OnsectionNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblSection_tblStudentSection", Storage="_tblStudentSections", ThisKey="sectionID", OtherKey="sectionID")]
+		public EntitySet<tblStudentSection> tblStudentSections
+		{
+			get
+			{
+				return this._tblStudentSections;
+			}
+			set
+			{
+				this._tblStudentSections.Assign(value);
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+		
+		private void attach_tblStudentSections(tblStudentSection entity)
+		{
+			this.SendPropertyChanging();
+			entity.tblSection = this;
+		}
+		
+		private void detach_tblStudentSections(tblStudentSection entity)
+		{
+			this.SendPropertyChanging();
+			entity.tblSection = null;
+		}
+	}
+	
 	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.tblStudent")]
 	public partial class tblStudent : INotifyPropertyChanging, INotifyPropertyChanged
 	{
@@ -895,9 +1182,9 @@ namespace SendScheduleFinals
 		
 		private string _studentName;
 		
-		private string _studentGradeLevel;
+		private int _gradeLevelID;
 		
-		private int _studentContactNumber;
+		private string _studentContactNumber;
 		
 		private string _studentEmail;
 		
@@ -906,8 +1193,6 @@ namespace SendScheduleFinals
 		private System.DateTime _studentDateOfBirth;
 		
 		private string _studentImage;
-		
-		private int _studentAge;
 		
 		private string _studentGender;
 		
@@ -919,7 +1204,9 @@ namespace SendScheduleFinals
 		
 		private EntitySet<tblRecord> _tblRecords;
 		
-		private EntitySet<tblStudentSchedule> _tblStudentSchedules;
+		private EntitySet<tblStudentSection> _tblStudentSections;
+		
+		private EntityRef<tblGradeLevel> _tblGradeLevel;
 		
     #region Extensibility Method Definitions
     partial void OnLoaded();
@@ -929,9 +1216,9 @@ namespace SendScheduleFinals
     partial void OnStudentIDChanged();
     partial void OnstudentNameChanging(string value);
     partial void OnstudentNameChanged();
-    partial void OnstudentGradeLevelChanging(string value);
-    partial void OnstudentGradeLevelChanged();
-    partial void OnstudentContactNumberChanging(int value);
+    partial void OngradeLevelIDChanging(int value);
+    partial void OngradeLevelIDChanged();
+    partial void OnstudentContactNumberChanging(string value);
     partial void OnstudentContactNumberChanged();
     partial void OnstudentEmailChanging(string value);
     partial void OnstudentEmailChanged();
@@ -941,8 +1228,6 @@ namespace SendScheduleFinals
     partial void OnstudentDateOfBirthChanged();
     partial void OnstudentImageChanging(string value);
     partial void OnstudentImageChanged();
-    partial void OnstudentAgeChanging(int value);
-    partial void OnstudentAgeChanged();
     partial void OnstudentGenderChanging(string value);
     partial void OnstudentGenderChanged();
     partial void OnstudentNationalityChanging(string value);
@@ -956,11 +1241,12 @@ namespace SendScheduleFinals
 		public tblStudent()
 		{
 			this._tblRecords = new EntitySet<tblRecord>(new Action<tblRecord>(this.attach_tblRecords), new Action<tblRecord>(this.detach_tblRecords));
-			this._tblStudentSchedules = new EntitySet<tblStudentSchedule>(new Action<tblStudentSchedule>(this.attach_tblStudentSchedules), new Action<tblStudentSchedule>(this.detach_tblStudentSchedules));
+			this._tblStudentSections = new EntitySet<tblStudentSection>(new Action<tblStudentSection>(this.attach_tblStudentSections), new Action<tblStudentSection>(this.detach_tblStudentSections));
+			this._tblGradeLevel = default(EntityRef<tblGradeLevel>);
 			OnCreated();
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StudentID", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StudentID", AutoSync=AutoSync.OnInsert, DbType="Int NOT NULL IDENTITY", IsPrimaryKey=true, IsDbGenerated=true)]
 		public int StudentID
 		{
 			get
@@ -1000,28 +1286,32 @@ namespace SendScheduleFinals
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_studentGradeLevel", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
-		public string studentGradeLevel
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_gradeLevelID", DbType="Int NOT NULL")]
+		public int gradeLevelID
 		{
 			get
 			{
-				return this._studentGradeLevel;
+				return this._gradeLevelID;
 			}
 			set
 			{
-				if ((this._studentGradeLevel != value))
+				if ((this._gradeLevelID != value))
 				{
-					this.OnstudentGradeLevelChanging(value);
+					if (this._tblGradeLevel.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OngradeLevelIDChanging(value);
 					this.SendPropertyChanging();
-					this._studentGradeLevel = value;
-					this.SendPropertyChanged("studentGradeLevel");
-					this.OnstudentGradeLevelChanged();
+					this._gradeLevelID = value;
+					this.SendPropertyChanged("gradeLevelID");
+					this.OngradeLevelIDChanged();
 				}
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_studentContactNumber", DbType="Int NOT NULL")]
-		public int studentContactNumber
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_studentContactNumber", DbType="NVarChar(11) NOT NULL", CanBeNull=false)]
+		public string studentContactNumber
 		{
 			get
 			{
@@ -1120,26 +1410,6 @@ namespace SendScheduleFinals
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_studentAge", DbType="Int NOT NULL")]
-		public int studentAge
-		{
-			get
-			{
-				return this._studentAge;
-			}
-			set
-			{
-				if ((this._studentAge != value))
-				{
-					this.OnstudentAgeChanging(value);
-					this.SendPropertyChanging();
-					this._studentAge = value;
-					this.SendPropertyChanged("studentAge");
-					this.OnstudentAgeChanged();
-				}
-			}
-		}
-		
 		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_studentGender", DbType="NVarChar(50) NOT NULL", CanBeNull=false)]
 		public string studentGender
 		{
@@ -1233,16 +1503,50 @@ namespace SendScheduleFinals
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblStudent_tblStudentSchedule", Storage="_tblStudentSchedules", ThisKey="StudentID", OtherKey="studentID")]
-		public EntitySet<tblStudentSchedule> tblStudentSchedules
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblStudent_tblStudentSection", Storage="_tblStudentSections", ThisKey="StudentID", OtherKey="studentID")]
+		public EntitySet<tblStudentSection> tblStudentSections
 		{
 			get
 			{
-				return this._tblStudentSchedules;
+				return this._tblStudentSections;
 			}
 			set
 			{
-				this._tblStudentSchedules.Assign(value);
+				this._tblStudentSections.Assign(value);
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblGradeLevel_tblStudent", Storage="_tblGradeLevel", ThisKey="gradeLevelID", OtherKey="gradeLevelID", IsForeignKey=true)]
+		public tblGradeLevel tblGradeLevel
+		{
+			get
+			{
+				return this._tblGradeLevel.Entity;
+			}
+			set
+			{
+				tblGradeLevel previousValue = this._tblGradeLevel.Entity;
+				if (((previousValue != value) 
+							|| (this._tblGradeLevel.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._tblGradeLevel.Entity = null;
+						previousValue.tblStudents.Remove(this);
+					}
+					this._tblGradeLevel.Entity = value;
+					if ((value != null))
+					{
+						value.tblStudents.Add(this);
+						this._gradeLevelID = value.gradeLevelID;
+					}
+					else
+					{
+						this._gradeLevelID = default(int);
+					}
+					this.SendPropertyChanged("tblGradeLevel");
+				}
 			}
 		}
 		
@@ -1278,30 +1582,32 @@ namespace SendScheduleFinals
 			entity.tblStudent = null;
 		}
 		
-		private void attach_tblStudentSchedules(tblStudentSchedule entity)
+		private void attach_tblStudentSections(tblStudentSection entity)
 		{
 			this.SendPropertyChanging();
 			entity.tblStudent = this;
 		}
 		
-		private void detach_tblStudentSchedules(tblStudentSchedule entity)
+		private void detach_tblStudentSections(tblStudentSection entity)
 		{
 			this.SendPropertyChanging();
 			entity.tblStudent = null;
 		}
 	}
 	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.tblStudentSchedule")]
-	public partial class tblStudentSchedule : INotifyPropertyChanging, INotifyPropertyChanged
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.tblStudentSection")]
+	public partial class tblStudentSection : INotifyPropertyChanging, INotifyPropertyChanged
 	{
 		
 		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
 		
-		private int _studentScheduleID;
+		private int _studentSectionID;
 		
 		private int _studentID;
 		
-		private int _scheduleID;
+		private int _sectionID;
+		
+		private EntityRef<tblSection> _tblSection;
 		
 		private EntityRef<tblStudent> _tblStudent;
 		
@@ -1309,36 +1615,37 @@ namespace SendScheduleFinals
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
     partial void OnCreated();
-    partial void OnstudentScheduleIDChanging(int value);
-    partial void OnstudentScheduleIDChanged();
+    partial void OnstudentSectionIDChanging(int value);
+    partial void OnstudentSectionIDChanged();
     partial void OnstudentIDChanging(int value);
     partial void OnstudentIDChanged();
-    partial void OnscheduleIDChanging(int value);
-    partial void OnscheduleIDChanged();
+    partial void OnsectionIDChanging(int value);
+    partial void OnsectionIDChanged();
     #endregion
 		
-		public tblStudentSchedule()
+		public tblStudentSection()
 		{
+			this._tblSection = default(EntityRef<tblSection>);
 			this._tblStudent = default(EntityRef<tblStudent>);
 			OnCreated();
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_studentScheduleID", DbType="Int NOT NULL", IsPrimaryKey=true)]
-		public int studentScheduleID
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_studentSectionID", DbType="Int NOT NULL", IsPrimaryKey=true)]
+		public int studentSectionID
 		{
 			get
 			{
-				return this._studentScheduleID;
+				return this._studentSectionID;
 			}
 			set
 			{
-				if ((this._studentScheduleID != value))
+				if ((this._studentSectionID != value))
 				{
-					this.OnstudentScheduleIDChanging(value);
+					this.OnstudentSectionIDChanging(value);
 					this.SendPropertyChanging();
-					this._studentScheduleID = value;
-					this.SendPropertyChanged("studentScheduleID");
-					this.OnstudentScheduleIDChanged();
+					this._studentSectionID = value;
+					this.SendPropertyChanged("studentSectionID");
+					this.OnstudentSectionIDChanged();
 				}
 			}
 		}
@@ -1367,27 +1674,65 @@ namespace SendScheduleFinals
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_scheduleID", DbType="Int NOT NULL")]
-		public int scheduleID
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_sectionID", DbType="Int NOT NULL")]
+		public int sectionID
 		{
 			get
 			{
-				return this._scheduleID;
+				return this._sectionID;
 			}
 			set
 			{
-				if ((this._scheduleID != value))
+				if ((this._sectionID != value))
 				{
-					this.OnscheduleIDChanging(value);
+					if (this._tblSection.HasLoadedOrAssignedValue)
+					{
+						throw new System.Data.Linq.ForeignKeyReferenceAlreadyHasValueException();
+					}
+					this.OnsectionIDChanging(value);
 					this.SendPropertyChanging();
-					this._scheduleID = value;
-					this.SendPropertyChanged("scheduleID");
-					this.OnscheduleIDChanged();
+					this._sectionID = value;
+					this.SendPropertyChanged("sectionID");
+					this.OnsectionIDChanged();
 				}
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblStudent_tblStudentSchedule", Storage="_tblStudent", ThisKey="studentID", OtherKey="StudentID", IsForeignKey=true)]
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblSection_tblStudentSection", Storage="_tblSection", ThisKey="sectionID", OtherKey="sectionID", IsForeignKey=true)]
+		public tblSection tblSection
+		{
+			get
+			{
+				return this._tblSection.Entity;
+			}
+			set
+			{
+				tblSection previousValue = this._tblSection.Entity;
+				if (((previousValue != value) 
+							|| (this._tblSection.HasLoadedOrAssignedValue == false)))
+				{
+					this.SendPropertyChanging();
+					if ((previousValue != null))
+					{
+						this._tblSection.Entity = null;
+						previousValue.tblStudentSections.Remove(this);
+					}
+					this._tblSection.Entity = value;
+					if ((value != null))
+					{
+						value.tblStudentSections.Add(this);
+						this._sectionID = value.sectionID;
+					}
+					else
+					{
+						this._sectionID = default(int);
+					}
+					this.SendPropertyChanged("tblSection");
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblStudent_tblStudentSection", Storage="_tblStudent", ThisKey="studentID", OtherKey="StudentID", IsForeignKey=true)]
 		public tblStudent tblStudent
 		{
 			get
@@ -1404,12 +1749,12 @@ namespace SendScheduleFinals
 					if ((previousValue != null))
 					{
 						this._tblStudent.Entity = null;
-						previousValue.tblStudentSchedules.Remove(this);
+						previousValue.tblStudentSections.Remove(this);
 					}
 					this._tblStudent.Entity = value;
 					if ((value != null))
 					{
-						value.tblStudentSchedules.Add(this);
+						value.tblStudentSections.Add(this);
 						this._studentID = value.StudentID;
 					}
 					else
@@ -1452,6 +1797,8 @@ namespace SendScheduleFinals
 		
 		private string _subjectName;
 		
+		private EntitySet<tblRecord> _tblRecords;
+		
     #region Extensibility Method Definitions
     partial void OnLoaded();
     partial void OnValidate(System.Data.Linq.ChangeAction action);
@@ -1464,6 +1811,7 @@ namespace SendScheduleFinals
 		
 		public tblSubject()
 		{
+			this._tblRecords = new EntitySet<tblRecord>(new Action<tblRecord>(this.attach_tblRecords), new Action<tblRecord>(this.detach_tblRecords));
 			OnCreated();
 		}
 		
@@ -1507,6 +1855,19 @@ namespace SendScheduleFinals
 			}
 		}
 		
+		[global::System.Data.Linq.Mapping.AssociationAttribute(Name="tblSubject_tblRecord", Storage="_tblRecords", ThisKey="subjectID", OtherKey="subjectID")]
+		public EntitySet<tblRecord> tblRecords
+		{
+			get
+			{
+				return this._tblRecords;
+			}
+			set
+			{
+				this._tblRecords.Assign(value);
+			}
+		}
+		
 		public event PropertyChangingEventHandler PropertyChanging;
 		
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -1525,6 +1886,18 @@ namespace SendScheduleFinals
 			{
 				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
 			}
+		}
+		
+		private void attach_tblRecords(tblRecord entity)
+		{
+			this.SendPropertyChanging();
+			entity.tblSubject = this;
+		}
+		
+		private void detach_tblRecords(tblRecord entity)
+		{
+			this.SendPropertyChanging();
+			entity.tblSubject = null;
 		}
 	}
 }
